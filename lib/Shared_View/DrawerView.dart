@@ -43,6 +43,8 @@ class _FalDrawer extends StatelessWidget {
           _row(context, Icons.grid_view_outlined, falText('استعرض الخدمات', 'Browse services'), () => _home(context, 2)),
           _row(context, Icons.card_giftcard_outlined, falText('المكافآت', 'Rewards'), () => _home(context, 3)),
           _section(falText('طلب الخدمات', 'Service requests')),
+          _row(context, Icons.qr_code_2, falText('تعبئة الوقود', 'Fuel card'), () => _open(context, fuelCardRoute)),
+          _row(context, Icons.history, falText('حركات الوقود', 'Fuel history'), () => _open(context, fuelHistoryRoute)),
           _row(context, Icons.add_shopping_cart, falText('طلب خدمة', 'Request a service'), () => _open(context, ClientServicePageRoute)),
           _row(context, Icons.handyman_outlined, falText('صيانة المحطة', 'Station maintenance'), () => _open(context, StationMaintenancePageRoute)),
           _row(context, Icons.local_shipping_outlined, falText('نقل الوقود', 'Fuel transport'), () => _open(context, StationTransportationRoute)),

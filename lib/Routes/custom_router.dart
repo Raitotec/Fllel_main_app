@@ -5,6 +5,7 @@ import 'package:babco/Views/Evaluation/StationEvaluationPage.dart';
 import 'package:babco/Views/LoginPages/otp_code_page.dart';
 import 'package:babco/Views/LoginPages/register_page.dart';
 import 'package:flutter/material.dart';
+import '../Views/fuel_card_page.dart';
 import 'package:babco/Models/DataModel.dart';
 import 'package:babco/Models/MainModel.dart';
 import 'package:babco/Models/RequestsModel.dart';
@@ -41,6 +42,10 @@ import 'route_constants.dart';
 class CustomRouter {
   static Route<dynamic> generatedRoute(RouteSettings settings) {
     switch (settings.name) {
+      case fuelCardRoute:
+        return MaterialPageRoute(builder: (_) => const FuelCardPage());
+      case fuelHistoryRoute:
+        return MaterialPageRoute(builder: (_) => const FuelHistoryPage());
       case startRoute:
         try {
 

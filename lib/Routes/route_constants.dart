@@ -1,4 +1,6 @@
 const String homeRoute = "homeRoute";
+const String fuelCardRoute = 'fuelCardRoute';
+const String fuelHistoryRoute = 'fuelHistoryRoute';
 const String aboutRoute = "aboutRoute";
 const String settingsRoute = "settingsRoute";
 const String loginRoute = "loginRoute";
