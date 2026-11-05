@@ -1,3 +1,4 @@
+import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,11 +11,12 @@ class DelegateData {
 saveDelegateData(DelegateDataModel obj)async
 {
   final prefs = await SharedPreferences.getInstance();
-  prefs.setInt("delegateId", obj.id as int);
-  prefs.setString("delegate_name", obj.name as String);
-  prefs.setString("delegate_email", obj.email as String);
-  prefs.setString("delegate_mobile", obj.mobile as String);
-  prefs.setString("delegate_token", obj.token as String);
+  await prefs.setString('delegate_data', jsonEncode(obj.toJson()));
+  await prefs.setInt("delegateId", obj.id ?? -1);
+  await prefs.setString("delegate_name", obj.name ?? '');
+  await prefs.setString("delegate_email", obj.email ?? '');
+  await prefs.setString("delegate_mobile", obj.mobile ?? '');
+  await prefs.setString("delegate_token", obj.token ?? '');
   DelegateData.delegateData= obj;
   print( DelegateData.delegateData!.name);
   print( DelegateData.delegateData!.id);
@@ -26,6 +28,13 @@ Future<DelegateDataModel?> getDelegateData()async
 {
   try {
     final prefs = await SharedPreferences.getInstance();
+    final cachedData = prefs.getString('delegate_data');
+    if (cachedData != null) {
+      final obj = DelegateDataModel.fromJson(
+          Map<String, dynamic>.from(jsonDecode(cachedData)));
+      DelegateData.delegateData = obj;
+      return obj;
+    }
     var delegateId = prefs.getInt('delegateId') ?? -1;
     var delegate_name = prefs.getString('delegate_name') ?? null;
     var delegate_email = prefs.getString('delegate_email') ?? null;
@@ -53,11 +62,12 @@ removeDelgateDate()async
 {
   try {
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove('delegateId');
-    prefs.remove('delegate_name');
-    prefs.remove('delegate_email');
-    prefs.remove('delegate_mobile');
-    prefs.remove("delegate_token");
+    await prefs.remove('delegate_data');
+    await prefs.remove('delegateId');
+    await prefs.remove('delegate_name');
+    await prefs.remove('delegate_email');
+    await prefs.remove('delegate_mobile');
+    await prefs.remove("delegate_token");
     DelegateData.delegateData = null;
   }
   catch(e)

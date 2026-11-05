@@ -1,9 +1,11 @@
 
 const String company_base_url = "https://tasks.raitosystem.com/api/getcompany/";
-const String activeCompanyCode = '133';
+const String activeCompanyCode ='43'; //'133';
 const String login = "customers/login";
 const String registration = "customers/registration";
 const String verifycode = "customers/verifycode";
+const String verifyRegistration = "customers/verify-registration";
+const String resendRegistrationCode = "customers/resend-registration-code";
 const String claim = "customers/claim";
 const String allstations = "stations/allstations";
 const String AllServices = "services/AllServices";
@@ -35,3 +37,5 @@ const String evaluations_service ="evaluations/service/";
 
 
 
+
+const String fuel_card = "customer/fuel/card";

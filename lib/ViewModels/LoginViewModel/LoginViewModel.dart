@@ -13,11 +13,10 @@ class LoginViewModel extends ChangeNotifier {
   void notifyListeners() { if (!_disposed) super.notifyListeners(); }
   final formKey = GlobalKey<FormState>();
 
-  final identifierController = TextEditingController(); // email or mobile
+  final identifierController = TextEditingController();
   final passwordController = TextEditingController();
 
   bool isLoading = false;
-
   Future<void> login(BuildContext context) async {
     if (isLoading || _disposed) return;
     if (!formKey.currentState!.validate()) return;
@@ -35,6 +34,7 @@ class LoginViewModel extends ChangeNotifier {
       if (!context.mounted || _disposed) return;
       if (res != null) {
         if (res.requiresVerification == true) {
+          res.verificationLogin = identifierController.text.trim();
           Navigator.pushNamed(
             context,
             verifyCodeRoute,

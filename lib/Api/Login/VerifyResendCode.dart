@@ -11,7 +11,7 @@ import '../../Shared_Data/LanguageData.dart';
 import '../../Shared_Data/NetworkCheckData.dart';
 import '../../Shared_View/AlertView.dart';
 
-Future<DelegateDataModel?> VerifyResendCode(BuildContext context,String mobile ) async {
+Future<DelegateDataModel?> VerifyResendCode(BuildContext context,String mobile, {bool isRegistration = false}) async {
   try {
     bool InternetConntected = await hasNetwork();
     if (InternetConntected) {
@@ -19,15 +19,16 @@ Future<DelegateDataModel?> VerifyResendCode(BuildContext context,String mobile )
         var lang= LanguageData.languageData;
         print(lang);
         var data = jsonEncode(<String, String>{
-          'mobile': mobile,
-          "lang": lang,
+          if (isRegistration) 'login': mobile,
+          if (!isRegistration) 'mobile': mobile,
+          if (!isRegistration) 'lang': lang,
         });
-        final response = await Post_Data(resend_verification, data);
+        final response = await Post_Data(isRegistration ? resendRegistrationCode : resend_verification, data);
         print(response.body);
         Map valueMap = jsonDecode(response.body);
         if (valueMap['code'] == 200) {
           print( " fn_Verifycode200 ::: ${valueMap['message']} ${valueMap['data']}");
-          var obj= DelegateDataModel.fromJson(valueMap['data']);
+          var obj= DelegateDataModel.fromJson(valueMap['data'] is Map ? Map<String, dynamic>.from(valueMap['data']) : <String, dynamic>{});
           return obj;
         }
         else {

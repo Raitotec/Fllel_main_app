@@ -67,7 +67,7 @@ class OtpViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-     var res= await Verifycode(context, data.mobile??"", otpController.text);
+     var res= await Verifycode(context, data.verificationLogin ?? data.mobile ?? "", otpController.text.trim(), isRegistration: data.isRegistrationVerification);
         if (!context.mounted || _disposed) return;
         if (res != null) {
           DelegateData.delegateData=res;
@@ -91,7 +91,7 @@ class OtpViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      var res = await VerifyResendCode(context, data.mobile ?? "");
+      var res = await VerifyResendCode(context, data.isRegistrationVerification ? (data.verificationLogin ?? "") : (data.mobile ?? ""), isRegistration: data.isRegistrationVerification);
       if (!context.mounted || _disposed) return;
       if (res != null) {
         startTimer();

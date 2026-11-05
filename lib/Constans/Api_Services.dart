@@ -12,14 +12,14 @@ Future<http.Response> Post_Data(String api_url, data) {
    String token = "";
    if(DelegateData.delegateData!= null && DelegateData.delegateData!.token!=null) {
      token = DelegateData.delegateData!.token!;
-     print(token);
    }
   print(UriData);
-  print(data);
+  if (api_url != login) print(data);
     return http.post(
         UriData,
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
           if(token.isNotEmpty)
           'Authorization': 'Bearer $token',
         },
@@ -43,6 +43,7 @@ Future<http.Response> Get_Data(String api_url, data) {
       newURI,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
         if(token.isNotEmpty)
           'Authorization': 'Bearer $token',
       },

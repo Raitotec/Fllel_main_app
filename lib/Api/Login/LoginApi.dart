@@ -1,40 +1,39 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart' as http;
 
 import '../../Constans/Api_Services.dart';
 import '../../Constans/Base_Url.dart';
 import '../../Localization/Translations.dart';
-import '../../Models/CompanyModel.dart';
 import '../../Models/DelegateDataModel.dart';
-import '../../Shared_Data/CompanyData.dart';
-import '../../Shared_Data/DelegateData.dart';
-import '../../Shared_Data/LanguageData.dart';
 import '../../Shared_Data/NetworkCheckData.dart';
 import '../../Shared_View/AlertView.dart';
 
 Future<DelegateDataModel?> Login(
-    BuildContext context,String mobile , String password) async {
+    BuildContext context, String loginName, String password) async {
   try {
     bool InternetConntected = await hasNetwork();
     if (InternetConntected) {
   try {
-    var lang= LanguageData.languageData;
-    print(lang);
     var data = jsonEncode(<String, String>{
-      'email_or_mobile': mobile,
+      'login': loginName,
       'password': password,
-      "lang": lang,
+      'device_name': Platform.operatingSystem,
     });
 
     final response = await Post_Data(login, data);
-    print(response.body);
+    debugPrint('Login response status: ${response.statusCode}');
   //  if (response.statusCode == 200) {
       Map valueMap = jsonDecode(response.body);
       if (valueMap['code'] == 200) {
-        print( " fn_Login200 ::: ${valueMap['message']} ${valueMap['data']}");
-        var obj= DelegateDataModel.fromJson(valueMap['data']);
+        final loginData = Map<String, dynamic>.from(valueMap['data']);
+        debugPrint('Login response fields: ${valueMap.keys.join(', ')}');
+        debugPrint('Login data fields: ${loginData.keys.join(', ')}');
+        loginData['token'] = loginData['token'] ?? loginData['access_token']
+            ?? valueMap['token'] ?? valueMap['access_token'];
+        var obj= DelegateDataModel.fromJson(loginData);
+        debugPrint('Login token received: ${(obj.token ?? '').isNotEmpty}');
       //  await saveDelegateData(obj);
 
         return obj;

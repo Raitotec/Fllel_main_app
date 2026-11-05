@@ -13,16 +13,8 @@ class RegisterViewModel extends ChangeNotifier {
   final lastNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
-  final passwordController = TextEditingController();
 
   bool isLoading = false;
-  bool obscureText = true;
-
-  void togglePassword() {
-    obscureText = !obscureText;
-    notifyListeners();
-  }
-
   Future<void> register(BuildContext context) async {
     if (isLoading || _disposed) return;
     if (!formKey.currentState!.validate()) return;
@@ -31,10 +23,13 @@ class RegisterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      var res = await RegistrationFun(context, phoneController.text,firstNameController.text,lastNameController.text,
-          emailController.text,passwordController.text);
+      var res = await RegistrationFun(context, phoneController.text.trim(),firstNameController.text.trim(),lastNameController.text.trim(),
+          emailController.text.trim());
       if (!context.mounted || _disposed) return;
       if (res != null) {
+        res.verificationLogin = emailController.text.trim();
+        res.isRegistrationVerification = true;
+        res.mobile = phoneController.text.trim();
         if (res.requiresVerification == true) {
           Navigator.pushReplacementNamed(
             context,
@@ -58,7 +53,6 @@ class RegisterViewModel extends ChangeNotifier {
     lastNameController.dispose();
     emailController.dispose();
     phoneController.dispose();
-    passwordController.dispose();
     super.dispose();
   }
 }

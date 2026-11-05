@@ -1,4 +1,9 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:babco/Models/CompanyModel.dart';
+import 'package:babco/Shared_Data/CompanyData.dart';
 import 'dart:ui' as ui;
 import 'package:babco/Shared_Data/LanguageData.dart';
 import 'package:babco/Views/fuel_card_page.dart';
@@ -72,8 +77,26 @@ void main(){
  expect(find.text('القيمة المعروضة تشمل الضريبة'),findsNothing);
  expect(t.takeException(),isNull);
  });
- testWidgets('unconfigured service never displays a fake QR',(t) async {
- await open(t,const FuelCardPage());expect(find.byType(QrImageView),findsNothing);
- expect(find.textContaining('لم يكتمل ربط'),findsOneWidget);await t.pumpWidget(const SizedBox());
+ testWidgets('API card shows money and beneficiary QR without invented status', (t) async {
+ final previous = CompanyData.companyData;
+ CompanyData.companyData = CompanyModel(petrolstation_base_url: 'https://demo-petrolreact.raitosystem.com/api/');
+ addTearDown(() => CompanyData.companyData = previous);
+ await http.runWithClient(() async {
+ await open(t, const FuelCardPage());
+ expect(find.text('محمد حمدى'), findsOneWidget);
+ expect(find.text('500 ر.س'), findsOneWidget);
+ expect(find.text('لا توجد تعبئات سابقة'), findsOneWidget);
+ expect(find.text('بطاقة نشطة'), findsNothing);
+ expect(find.byKey(const ValueKey('fuel-beneficiary-qr')), findsOneWidget);
+ await t.pumpWidget(const SizedBox());
+ }, () => MockClient((request) async {
+ expect(request.method, 'GET');
+ expect(request.url.path, '/api/customer/fuel/card');
+ return http.Response(jsonEncode({'code':200,'data':{
+ 'beneficiary':{'id':1,'name':'محمد حمدى','employee_number':'M001'},
+ 'allowance':{'allocated_amount':500,'remaining_amount':500,'consumed_amount':0,'remaining_percentage':100},
+ 'vehicle':null,'contract':null,'last_refill':null,
+ }}),200,headers:{'content-type':'application/json; charset=utf-8'});
+ }));
  });
 }

@@ -7,23 +7,19 @@ import '../../Constans/Base_Url.dart';
 import '../../Localization/Translations.dart';
 import '../../Models/DelegateDataModel.dart';
 import '../../Shared_Data/DelegateData.dart';
-import '../../Shared_Data/LanguageData.dart';
 import '../../Shared_Data/NetworkCheckData.dart';
 import '../../Shared_View/AlertView.dart';
 
-Future<DelegateDataModel?> Verifycode(BuildContext context,String mobile ,String code) async {
+Future<DelegateDataModel?> Verifycode(BuildContext context,String loginName ,String code, {bool isRegistration = false}) async {
   try {
     bool InternetConntected = await hasNetwork();
     if (InternetConntected) {
       try {
-        var lang= LanguageData.languageData;
-        print(lang);
         var data = jsonEncode(<String, String>{
-          'mobile': mobile,
+          'login': loginName,
           "code":code,
-          "lang": lang,
         });
-        final response = await Post_Data(verifycode, data);
+        final response = await Post_Data(isRegistration ? verifyRegistration : verifycode, data);
         print(response.body);
         //   if (response.statusCode == 200) {
         Map valueMap = jsonDecode(response.body);

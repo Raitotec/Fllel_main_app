@@ -6,33 +6,28 @@ import 'package:flutter/material.dart';
 import '../../Constans/Api_Services.dart';
 import '../../Constans/Base_Url.dart';
 import '../../Localization/Translations.dart';
-import '../../Shared_Data/LanguageData.dart';
 import '../../Shared_Data/NetworkCheckData.dart';
 import '../../Shared_View/AlertView.dart';
 
 Future<DelegateDataModel?> RegistrationFun(BuildContext context,String mobile ,String first_name,
-    String last_name,String email,String password) async
+    String last_name,String email) async
 {
   try {
     bool InternetConntected = await hasNetwork();
     if (InternetConntected) {
       try {
-        var lang= LanguageData.languageData;
-        print(lang);
         var data = jsonEncode(<String, String>{
           'mobile': mobile,
           "first_name":first_name,
           "last_name":last_name,
           "email":email,
-          "password":password,
-          "lang": lang,
         });
         final response = await Post_Data(registration, data);
         print(response.body);
         Map valueMap = jsonDecode(response.body);
-        if (valueMap['code'] == 200) {
+        if (response.statusCode >= 200 && response.statusCode < 300 && (valueMap['success'] == true || valueMap['code'] == 200 || valueMap['code'] == 201)) {
           print( " fn_Registration200 ::: ${valueMap['message']} ${valueMap['data']}");
-          DelegateDataModel obj= new DelegateDataModel.fromJson(valueMap['data']);
+          DelegateDataModel obj= DelegateDataModel.fromJson(valueMap['data'] is Map ? Map<String, dynamic>.from(valueMap['data']) : <String, dynamic>{});
           await AlertView(context, "success", Translations.of(context)!.Ok,Translations.of(context)!.success_msg);
           return obj;
         }

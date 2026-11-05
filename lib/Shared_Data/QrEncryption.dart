@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart';
 
@@ -42,4 +43,59 @@ class QrEncryption {
     return jsonDecode(decrypted);
   }
 
+}
+
+/// Shared wire format for the customer and station applications.
+/// Uses the encrypt package. Both applications must share this codec and key.
+/// An embedded key hides the ID but can be extracted from the application.
+class FuelQrEncryption {
+  static const String _sharedKey = 'hOCj8SN+DBhYvGsnEsV7ArBcqZtYeezmfWz47Na9EJs=';
+  static const String prefix = 'FLF1';
+  final Encrypter _cipher;
+  static final Uint8List _associatedData = Uint8List.fromList(utf8.encode(prefix));
+
+  FuelQrEncryption([String? base64Key]) : _cipher = Encrypter(
+      AES(_key(base64Key ?? _sharedKey), mode: AESMode.gcm));
+
+  static Key _key(String value) {
+    final bytes = base64Decode(value);
+    if (bytes.length != 32) {
+      throw ArgumentError('Fuel QR requires a 32-byte Base64 key');
+    }
+    return Key(bytes);
+  }
+
+  String encode(int beneficiaryId) {
+    if (beneficiaryId <= 0) throw ArgumentError('Invalid beneficiary ID');
+    final nonce = IV.fromSecureRandom(12);
+    final encrypted = _cipher.encrypt(beneficiaryId.toString(),
+        iv: nonce, associatedData: _associatedData);
+    return '$prefix.${base64UrlEncode(nonce.bytes)}.${base64UrlEncode(encrypted.bytes)}';
+  }
+
+  /// Authenticate before returning the ID to the station application.
+  /// Ciphertext includes the 16-byte GCM authentication tag at its end.
+  int decode(String value) {
+    try {
+      final parts = value.split('.');
+      if (parts.length != 3 || parts.first != prefix || value.length > 256) {
+        throw const FormatException('Invalid fuel QR');
+      }
+      final nonce = base64Url.decode(parts[1]);
+      final encrypted = base64Url.decode(parts[2]);
+      if (nonce.length != 12 || encrypted.length <= 16) {
+        throw const FormatException('Invalid fuel QR');
+      }
+      final plaintext = _cipher.decrypt(Encrypted(encrypted),
+          iv: IV(nonce), associatedData: _associatedData);
+      if (!RegExp(r'^[1-9][0-9]*$').hasMatch(plaintext)) {
+        throw const FormatException('Invalid fuel QR');
+      }
+      final id = int.tryParse(plaintext);
+      if (id == null || id <= 0) throw const FormatException('Invalid fuel QR');
+      return id;
+    } catch (_) {
+      throw const FormatException('Invalid fuel QR');
+    }
+  }
 }
