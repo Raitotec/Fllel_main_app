@@ -11,11 +11,22 @@ class LoginPage extends StatelessWidget {
     child: Consumer<LoginViewModel>(builder: (context, vm, _) => AuthFrame(
       title: authText('أهلاً بعودتك', 'Welcome back'), subtitle: authText('سجّل الدخول للوصول إلى حسابك وخدماتك', 'Sign in to access your account and services'),
       formKey: vm.formKey, loading: vm.isLoading, children: [
-        AuthField(controller: vm.identifierController, label: authText('اسم المستخدم أو البريد أو الجوال', 'Username, email or mobile'), icon: Icons.person_outline,
+        AuthField(controller: vm.identifierController, label: authText('الجوال أو البريد الإلكتروني', 'Mobile or email'), icon: Icons.person_outline,
           keyboard: TextInputType.text, autofill: const [AutofillHints.username],
-          validator: (v) => (v ?? '').trim().isEmpty ? authText('أدخل بيانات تسجيل الدخول', 'Enter your login') : null),
-        AuthField(controller: vm.passwordController, label: authText('كلمة المرور', 'Password'), icon: Icons.lock_outline,
+          validator: (v) {
+            final value = (v ?? '').trim();
+            if (value.isEmpty) return authText('أدخل بيانات تسجيل الدخول', 'Enter your login');
+            return null;
+          }),
+        if (vm.isSubscription) AuthField(controller: vm.passwordController, label: authText('كلمة المرور', 'Password'), icon: Icons.lock_outline,
           password: true, autofill: const [AutofillHints.password], validator: (v) => (v ?? '').length < 6 ? authText('كلمة المرور لا تقل عن 6 أحرف', 'Password must contain at least 6 characters') : null),
+        CheckboxListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(authText('اشتراكات', 'Subscriptions')),
+          value: vm.isSubscription,
+          controlAffinity: ListTileControlAffinity.leading,
+          onChanged: vm.isLoading ? null : (value) => vm.setSubscription(value ?? false),
+        ),
         const SizedBox(height: 8), authButton(authText('تسجيل الدخول', 'Sign in'), vm.isLoading ? null : () => vm.login(context)),
         const SizedBox(height: 18), TextButton(onPressed: () => Navigator.pushNamed(context, newUserRoute), child: Text(authText('ليس لديك حساب؟ إنشاء حساب', 'New here? Create an account'))),
         const SizedBox(height: 12), const Icon(Icons.lock_outline, size: 20, color: Color(0xFF64748B)),

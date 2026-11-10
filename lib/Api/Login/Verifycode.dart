@@ -6,7 +6,6 @@ import '../../Constans/Api_Services.dart';
 import '../../Constans/Base_Url.dart';
 import '../../Localization/Translations.dart';
 import '../../Models/DelegateDataModel.dart';
-import '../../Shared_Data/DelegateData.dart';
 import '../../Shared_Data/NetworkCheckData.dart';
 import '../../Shared_View/AlertView.dart';
 
@@ -20,13 +19,14 @@ Future<DelegateDataModel?> Verifycode(BuildContext context,String loginName ,Str
           "code":code,
         });
         final response = await Post_Data(isRegistration ? verifyRegistration : verifycode, data);
-        print(response.body);
         //   if (response.statusCode == 200) {
         Map valueMap = jsonDecode(response.body);
-        if (valueMap['code'] == 200) {
-          print( " fn_Verifycode200 ::: ${valueMap['message']} ${valueMap['data']}");
-          var obj= DelegateDataModel.fromJson(valueMap['data']);
-          await saveDelegateData(obj);
+        if (response.statusCode >= 200 && response.statusCode < 300 &&
+            (valueMap['success'] == true || valueMap['code'] == 200 || valueMap['code'] == 201)) {
+          final accountData = Map<String, dynamic>.from(valueMap['data']);
+          accountData['token'] = accountData['token'] ?? accountData['access_token']
+              ?? valueMap['token'] ?? valueMap['access_token'];
+          var obj = DelegateDataModel.fromJson(accountData);
 
           return obj;
         }

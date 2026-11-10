@@ -6,7 +6,6 @@ import 'package:babco/Shared_Data/LanguageData.dart';
 import 'package:babco/Localization/TranslationsDelegate.dart';
 import 'package:babco/Views/LoginPages/login_page.dart';
 import 'package:babco/ViewModels/LoginViewModel/LoginViewModel.dart';
-import 'package:babco/ViewModels/PersonInformationViewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -51,10 +50,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('أدخل بيانات تسجيل الدخول'), findsOneWidget);
     final vm = tester.element(find.byType(Form)).read<LoginViewModel>();
-    expect(vm.accountType, 'individual');
-    await tester.tap(find.text('موظف شركة'));
+    expect(vm.isSubscription, isFalse);
+    expect(find.byType(TextField), findsOneWidget);
+    await tester.tap(find.text('اشتراكات'));
     await tester.pumpAndSettle();
-    expect(vm.accountType, 'company_employee');
+    expect(vm.isSubscription, isTrue);
+    await tester.tap(find.text('تسجيل الدخول'));
+    await tester.pumpAndSettle();
     expect(find.text('كلمة المرور لا تقل عن 6 أحرف'), findsOneWidget);
     expect(tester.widget<TextField>(find.byType(TextField).last).obscureText, isTrue);
     await tester.tap(find.byTooltip('إظهار كلمة المرور'));
@@ -62,7 +64,33 @@ void main() {
     await tester.runAsync(() => precacheImage(const AssetImage('lib/assets/fal_brand.png'), tester.element(find.byType(Form))));
     await tester.pumpAndSettle();
     expect(tester.widget<TextField>(find.byType(TextField).last).obscureText, isFalse);
+    await tester.enterText(find.byType(TextField).last, 'secret123');
+    await tester.tap(find.text('اشتراكات'));
+    await tester.pumpAndSettle();
+    expect(vm.isSubscription, isFalse);
+    expect(vm.passwordController.text, isEmpty);
+    expect(find.byType(TextField), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('both login modes accept mobile and email', (tester) async {
+    await open(tester);
+    final vm = tester.element(find.byType(Form)).read<LoginViewModel>();
+    for (final subscription in [false, true]) {
+      if (vm.isSubscription != subscription) {
+        await tester.tap(find.text('اشتراكات'));
+        await tester.pumpAndSettle();
+      }
+      for (final identifier in ['0512345678', 'test@example.com']) {
+        await tester.enterText(find.byType(TextFormField).first, identifier);
+        if (subscription) {
+          await tester.enterText(find.byType(TextFormField).last, 'secret123');
+        }
+        expect(vm.formKey.currentState!.validate(), isTrue);
+        await tester.pump();
+      }
+    }
+    expect(tester.takeException(), isNull);
+  });
+
 }
 

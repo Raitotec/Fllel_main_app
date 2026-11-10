@@ -7,12 +7,24 @@ import '../../Models/FuelCardModel.dart';
 import '../../Shared_View/AlertView.dart';
 import '../../Shared_Data/DelegateData.dart';
 
-Future<FuelCardData?> GetFuelCard(BuildContext context) async {
+class FuelLoginRequired implements Exception {
+  const FuelLoginRequired();
+}
+
+void _checkFuelAuthentication(int statusCode, dynamic body) {
+  if (statusCode == 401 ||
+      (body is Map && (body['code'].toString() == '401' ||
+          body['message'] == 'Unauthenticated customer.'))) {
+    throw const FuelLoginRequired();
+  }
+}
+
+Future<FuelCardData?> GetFuelCard(BuildContext context, {bool silent = false}) async {
   try {
     final tokenPresent = (DelegateData.delegateData?.token ?? '').trim().isNotEmpty;
-    print(DelegateData.delegateData?.token );
     final response = await Get_Data(fuel_card, null);
     debugPrint('Fuel card HTTP status: ${response.statusCode}; authorization token present: $tokenPresent');
+    _checkFuelAuthentication(response.statusCode, null);
     Map valueMap;
     try {
       final decoded = jsonDecode(response.body);
@@ -20,21 +32,24 @@ Future<FuelCardData?> GetFuelCard(BuildContext context) async {
       valueMap = decoded;
     } on FormatException {
       debugPrint('Fuel card error response: ${response.body}');
-      if (!context.mounted) return null;
+      if (!context.mounted || silent) return null;
       await AlertView(context, 'error', Translations.of(context)!.ErrorTitle,
           response.body.isNotEmpty ? response.body : 'HTTP ${response.statusCode}');
       return null;
     }
+    _checkFuelAuthentication(response.statusCode, valueMap);
     if (response.statusCode == 200 && valueMap['code'] == 200 && valueMap['data'] is Map) {
       return FuelCardData.fromJson(Map<String, dynamic>.from(valueMap['data']));
     }
     final message = (valueMap['message'] ?? valueMap['error'] ?? response.body).toString();
     debugPrint('Fuel card error response: ${response.body}');
-    if (!context.mounted) return null;
+    if (!context.mounted || silent) return null;
     await AlertView(context, 'error', Translations.of(context)!.ErrorTitle, message);
+  } on FuelLoginRequired {
+    rethrow;
   } catch (e) {
     debugPrint('Fuel card request failed: $e');
-    if (!context.mounted) return null;
+    if (!context.mounted || silent) return null;
     await AlertView(context, 'error', Translations.of(context)!.ErrorTitle, e.toString());
   }
   return null;
@@ -47,7 +62,9 @@ Future<Map<String, dynamic>> GetFuelRefills(DateTime month, int page, String? st
     'page': page.toString(),
     if (status != null) 'status': status,
   });
+  _checkFuelAuthentication(response.statusCode, null);
   final valueMap = jsonDecode(response.body);
+  _checkFuelAuthentication(response.statusCode, valueMap);
   if (response.statusCode == 200 && valueMap is Map && valueMap['code'] == 200 && valueMap['data'] is Map) {
     return Map<String, dynamic>.from(valueMap['data']);
   }
@@ -56,7 +73,9 @@ Future<Map<String, dynamic>> GetFuelRefills(DateTime month, int page, String? st
 
 Future<Map<String, dynamic>> GetFuelRefillDetails(String id) async {
   final response = await Get_Data('customer/fuel/refills/${Uri.encodeComponent(id)}', null);
+  _checkFuelAuthentication(response.statusCode, null);
   final valueMap = jsonDecode(response.body);
+  _checkFuelAuthentication(response.statusCode, valueMap);
   if (response.statusCode == 200 && valueMap is Map && valueMap['code'] == 200 && valueMap['data'] is Map) {
     return Map<String, dynamic>.from(valueMap['data']);
   }

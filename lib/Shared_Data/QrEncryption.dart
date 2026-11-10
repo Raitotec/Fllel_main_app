@@ -50,7 +50,7 @@ class QrEncryption {
 /// An embedded key hides the ID but can be extracted from the application.
 class FuelQrEncryption {
   static const String _sharedKey = 'hOCj8SN+DBhYvGsnEsV7ArBcqZtYeezmfWz47Na9EJs=';
-  static const String prefix = 'FLF1';
+  static const String prefix = 'FLF2';
   final Encrypter _cipher;
   static final Uint8List _associatedData = Uint8List.fromList(utf8.encode(prefix));
 
@@ -65,20 +65,28 @@ class FuelQrEncryption {
     return Key(bytes);
   }
 
-  String encode(int beneficiaryId) {
+  static const lifetime = Duration(seconds: 30);
+
+  String encode(int beneficiaryId, {DateTime? now}) {
     if (beneficiaryId <= 0) throw ArgumentError('Invalid beneficiary ID');
     final nonce = IV.fromSecureRandom(12);
-    final encrypted = _cipher.encrypt(beneficiaryId.toString(),
+    final issuedAt = (now ?? DateTime.now()).millisecondsSinceEpoch;
+    final payload = jsonEncode({
+      'beneficiary_id': beneficiaryId,
+      'issued_at': issuedAt,
+      'expires_at': issuedAt + lifetime.inMilliseconds,
+    });
+    final encrypted = _cipher.encrypt(payload,
         iv: nonce, associatedData: _associatedData);
     return '$prefix.${base64UrlEncode(nonce.bytes)}.${base64UrlEncode(encrypted.bytes)}';
   }
 
   /// Authenticate before returning the ID to the station application.
   /// Ciphertext includes the 16-byte GCM authentication tag at its end.
-  int decode(String value) {
+  int decode(String value, {DateTime? now}) {
     try {
       final parts = value.split('.');
-      if (parts.length != 3 || parts.first != prefix || value.length > 256) {
+      if (parts.length != 3 || parts.first != prefix || value.length > 512) {
         throw const FormatException('Invalid fuel QR');
       }
       final nonce = base64Url.decode(parts[1]);
@@ -88,11 +96,17 @@ class FuelQrEncryption {
       }
       final plaintext = _cipher.decrypt(Encrypted(encrypted),
           iv: IV(nonce), associatedData: _associatedData);
-      if (!RegExp(r'^[1-9][0-9]*$').hasMatch(plaintext)) {
-        throw const FormatException('Invalid fuel QR');
+      final payload = jsonDecode(plaintext);
+      if (payload is! Map) throw const FormatException('Invalid fuel QR');
+      final id = payload['beneficiary_id'];
+      final issuedAt = payload['issued_at'];
+      final expiresAt = payload['expires_at'];
+      final current = (now ?? DateTime.now()).millisecondsSinceEpoch;
+      if (id is! int || id <= 0 || issuedAt is! int || expiresAt is! int ||
+          expiresAt - issuedAt != lifetime.inMilliseconds ||
+          current < issuedAt || current >= expiresAt) {
+        throw const FormatException('Invalid or expired fuel QR');
       }
-      final id = int.tryParse(plaintext);
-      if (id == null || id <= 0) throw const FormatException('Invalid fuel QR');
       return id;
     } catch (_) {
       throw const FormatException('Invalid fuel QR');

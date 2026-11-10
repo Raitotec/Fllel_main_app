@@ -48,6 +48,23 @@ Future<void> shot(WidgetTester t,String name) async {
  });
 }
 void main(){
+ for (final page in ['card', 'history']) {
+ testWidgets('$page asks for login inline on unauthorized response', (t) async {
+ final previous = CompanyData.companyData;
+ CompanyData.companyData = CompanyModel(petrolstation_base_url: 'https://example.com/api/');
+ addTearDown(() => CompanyData.companyData = previous);
+ await http.runWithClient(() async {
+ await open(t, page == 'card' ? const FuelCardPage() : const FuelHistoryPage());
+ expect(find.text(page == 'card' ? 'يرجى تسجيل الدخول لعرض بطاقة الوقود' : 'يرجى تسجيل الدخول لعرض حركات الوقود'), findsOneWidget);
+ expect(find.text('Unauthenticated customer.'), findsNothing);
+ expect(find.byType(Dialog), findsNothing);
+ expect(t.takeException(), isNull);
+ await t.pumpWidget(const SizedBox());
+ }, () => MockClient((request) async => http.Response(jsonEncode({
+ 'success':false,'code':401,'message':'Unauthenticated customer.','data':null,
+ }),401)));
+ });
+ }
  testWidgets('QR expires and failed renewal removes old code', (t) async {
  final f=Fixture();var now=DateTime.now();f.now=()=>now;await open(t,FuelCardPage(source:f,now:()=>now));
  expect(find.byType(QrImageView),findsOneWidget);await shot(t,'fuel-card-local-preview');

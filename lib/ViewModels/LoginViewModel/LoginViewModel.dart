@@ -16,6 +16,16 @@ class LoginViewModel extends ChangeNotifier {
   final identifierController = TextEditingController();
   final passwordController = TextEditingController();
 
+  bool isSubscription = false;
+
+  void setSubscription(bool value) {
+    if (isLoading || _disposed) return;
+    isSubscription = value;
+    passwordController.clear();
+    formKey.currentState?.reset();
+    notifyListeners();
+  }
+
   bool isLoading = false;
   Future<void> login(BuildContext context) async {
     if (isLoading || _disposed) return;
@@ -28,12 +38,12 @@ class LoginViewModel extends ChangeNotifier {
       final res = await Login(
         context,
         identifierController.text.trim(),
-        passwordController.text,
+        isSubscription ? passwordController.text : null,
       );
 
       if (!context.mounted || _disposed) return;
       if (res != null) {
-        if (res.requiresVerification == true) {
+        if (!isSubscription) {
           res.verificationLogin = identifierController.text.trim();
           Navigator.pushNamed(
             context,

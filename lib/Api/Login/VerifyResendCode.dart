@@ -6,8 +6,6 @@ import '../../Constans/Api_Services.dart';
 import '../../Constans/Base_Url.dart';
 import '../../Localization/Translations.dart';
 import '../../Models/DelegateDataModel.dart';
-import '../../Shared_Data/DelegateData.dart';
-import '../../Shared_Data/LanguageData.dart';
 import '../../Shared_Data/NetworkCheckData.dart';
 import '../../Shared_View/AlertView.dart';
 
@@ -16,14 +14,10 @@ Future<DelegateDataModel?> VerifyResendCode(BuildContext context,String mobile, 
     bool InternetConntected = await hasNetwork();
     if (InternetConntected) {
       try {
-        var lang= LanguageData.languageData;
-        print(lang);
-        var data = jsonEncode(<String, String>{
-          if (isRegistration) 'login': mobile,
-          if (!isRegistration) 'mobile': mobile,
-          if (!isRegistration) 'lang': lang,
-        });
-        final response = await Post_Data(isRegistration ? resendRegistrationCode : resend_verification, data);
+        final data = <String, String>{
+          'login': mobile,
+        };
+        final response = await Post_Data(resendRegistrationCode, jsonEncode(data));
         print(response.body);
         Map valueMap = jsonDecode(response.body);
         if (valueMap['code'] == 200) {
