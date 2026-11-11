@@ -27,13 +27,14 @@ class RegisterViewModel extends ChangeNotifier {
           emailController.text.trim());
       if (!context.mounted || _disposed) return;
       if (res != null) {
+        res.type = 'default';
         res.verificationLogin = emailController.text.trim();
         res.isRegistrationVerification = true;
         res.mobile = phoneController.text.trim();
         if (res.requiresVerification == true) {
           Navigator.pushReplacementNamed(
             context,
-            verifyCodeRoute,
+            registrationEmailVerificationRoute,
             arguments: res,
           );
         }

@@ -24,7 +24,8 @@ class RegisterPage extends StatelessWidget {
           keyboard: TextInputType.phone, autofill: const [AutofillHints.telephoneNumberNational], validator: (v) => RegExp(r'^05[0-9]{8}$').hasMatch((v ?? '').trim()) ? null : authText('رقم الجوال يبدأ بـ05 ويتكون من 10 أرقام', 'Enter a 10-digit number starting with 05')),
         Padding(padding: const EdgeInsets.only(bottom: 20), child: Text(authText('سيتم إرسال رمز التحقق إلى بريدك الإلكتروني', 'A verification code will be sent to your email'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)))),
         authButton(authText('إنشاء الحساب', 'Create account'), vm.isLoading ? null : () => vm.register(context)),
-        const SizedBox(height: 14), TextButton(onPressed: () => Navigator.pushReplacementNamed(context, loginRoute), child: Text(authText('لديك حساب؟ تسجيل الدخول', 'Already have an account? Sign in'))),
+        const SizedBox(height: 14), TextButton(onPressed: () => Navigator.pushReplacementNamed(context,
+              loginRoute), child: Text(authText('لديك حساب؟ تسجيل الدخول', 'Already have an account? Sign in'))),
       ])));
 }
 

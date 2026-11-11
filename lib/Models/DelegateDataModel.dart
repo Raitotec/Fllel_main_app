@@ -2,6 +2,7 @@ class DelegateDataModel {
   int? id;
   int? fuelBeneficiaryId;
   String? accountType;
+  String type = 'default';
   String? name;
   String? mobile;
   String? verificationLogin;
@@ -13,6 +14,7 @@ class DelegateDataModel {
   Map<String, dynamic>? contract;
   String? message;
   bool? requiresVerification;
+  bool? emailVerificationCode;
   String? token;
   Map<String, dynamic> _data = {};
 
@@ -23,11 +25,13 @@ class DelegateDataModel {
     fuelBeneficiaryId = int.tryParse(json['fuel_beneficiary_id'].toString());
     id = fuelBeneficiaryId ?? int.tryParse(json['id'].toString()) ?? -1;
     accountType = json['account_type']?.toString();
+    type = json['type'] == 'subscription' ? 'subscription' : 'default';
     employeeNumber = json['employee_number']?.toString();
     company = json['company'] is Map ? Map<String, dynamic>.from(json['company']) : null;
     customer = json['customer'] is Map ? Map<String, dynamic>.from(json['customer']) : null;
     contract = json['contract'] is Map ? Map<String, dynamic>.from(json['contract']) : null;
     requiresVerification = json['requires_verification'] ?? true;
+    emailVerificationCode = json['email_verification_code'];
     message = json['message']?.toString() ?? '';
     mobile = json['mobile']?.toString() ?? '';
     email = json['email']?.toString() ?? '';
@@ -42,6 +46,7 @@ class DelegateDataModel {
       'id': id,
       'fuel_beneficiary_id': fuelBeneficiaryId,
       'account_type': accountType,
+      'type': type,
       'name': name,
       'mobile': mobile,
       'email': email,
@@ -51,6 +56,7 @@ class DelegateDataModel {
       'contract': contract,
       'message': message,
       'requires_verification': requiresVerification,
+      'email_verification_code': emailVerificationCode,
       'token': token,
     };
   }

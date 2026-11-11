@@ -33,6 +33,7 @@ Future<DelegateDataModel?> Login(
             : <String, dynamic>{};
         debugPrint('Login response fields: ${valueMap.keys.join(', ')}');
         debugPrint('Login data fields: ${loginData.keys.join(', ')}');
+        debugPrint('Login data fields: ${loginData.values.join(', ')}');
         loginData['token'] = loginData['token'] ?? loginData['access_token']
             ?? valueMap['token'] ?? valueMap['access_token'];
         var obj= DelegateDataModel.fromJson(loginData);

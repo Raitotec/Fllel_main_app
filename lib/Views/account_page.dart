@@ -78,7 +78,9 @@ class _AccountState extends State<AccountPage> {
         ]),
         const SizedBox(height: 18),
         Material(color: const Color(0xFFEEF6FD), borderRadius: BorderRadius.circular(16),
-          child: InkWell(onTap: () => _open(signedIn ? PersonInformationRoute : loginRoute),
+          child: InkWell(onTap: DelegateData.isSubscription
+              ? null
+              : () => _open(signedIn ? PersonInformationRoute : loginRoute),
             borderRadius: BorderRadius.circular(16), child: Container(padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(border: Border.all(color: const Color(0xFFD8E7F5)), borderRadius: BorderRadius.circular(16)),
               child: Row(children: [
@@ -92,8 +94,11 @@ class _AccountState extends State<AccountPage> {
                   const SizedBox(height: 4),
                   Text(signedIn ? t('حسابك مع فلل', 'Your FAL account') : t('سجّل الدخول لإدارة حسابك', 'Sign in to manage your account'),
                     style: text(12, color: const Color(0xFF64748B), weight: FontWeight.w400)),
-                ])), const Icon(Icons.edit_outlined, color: _blue, size: 22),
+                ])),
+                if (!DelegateData.isSubscription)
+                  const Icon(Icons.edit_outlined, color: _blue, size: 22),
               ])))),
+        if (!DelegateData.isSubscription) ...[
         const SizedBox(height: 20),
         _group(t('حسابك', 'Your account'), [
           _row(Icons.person_outline, t('معلوماتي', 'My information'), () => _open(PersonInformationRoute, requiresLogin: true)),
@@ -101,11 +106,13 @@ class _AccountState extends State<AccountPage> {
           _row(Icons.receipt_long_outlined, t('طلباتي', 'My orders'), () => _open(RequestsRoute, requiresLogin: true)),
         ]),
         const SizedBox(height: 18),
+        ],
+        if (DelegateData.isSubscription) const SizedBox(height: 20),
         Container(key: _settingsKey, child: _group(t('الإعدادات والمساعدة', 'Settings and help'), [
           _row(Icons.language, t('اللغة', 'Language'), _language, subtitle: t('العربية', 'English')),
           _row(Icons.chat_bubble_outline, t('تواصل معنا', 'Contact us'), () => _open(Connect_usRoute)),
           _row(Icons.info_outline, t('من نحن', 'About us'), () => _open(AboutUsRoute)),
-          if (signedIn) _row(Icons.delete_outline, t('حذف الحساب', 'Delete account'),
+          if (signedIn && !DelegateData.isSubscription) _row(Icons.delete_outline, t('حذف الحساب', 'Delete account'),
             () => _open(deleteAccountRoute, requiresLogin: true), danger: true),
         ])),
         const SizedBox(height: 20),

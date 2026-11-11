@@ -74,6 +74,7 @@ class _ProfileState extends State<_ProfileBody> {
                 keyboard: TextInputType.phone, ltr: true, autofill: const [AutofillHints.telephoneNumberNational],
                 validator: (value) => !RegExp(r'^05[0-9]{8}$').hasMatch((value ?? '').trim())
                   ? t('أدخل رقم جوال صحيحًا يبدأ بـ05', 'Enter a valid 10-digit mobile number starting with 05') : null),
+              if (DelegateData.isSubscription) ...[
               const SizedBox(height: 26),
               Text(t('أمان الحساب', 'Account security'), style: text(19, weight: FontWeight.w800)),
               const SizedBox(height: 5),
@@ -102,6 +103,7 @@ class _ProfileState extends State<_ProfileBody> {
                       toggle: () => setState(() => _hideNew = !_hideNew), validator: (value) => vm.passwordValidator(context, value)),
                   ],
                 ])),
+              ],
               const SizedBox(height: 18),
               Container(padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: const Color(0xFFEEF6FD), borderRadius: BorderRadius.circular(14)),

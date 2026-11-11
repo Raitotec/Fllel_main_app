@@ -40,6 +40,7 @@ class PersonInformationViewModel extends ChangeNotifier {
   }
 
   void togglePasswordFields() {
+    if (!DelegateData.isSubscription) return;
     showPasswordFields = !showPasswordFields;
 
     if (!showPasswordFields) {
@@ -66,7 +67,7 @@ class PersonInformationViewModel extends ChangeNotifier {
       )
   {
 
-    if (!showPasswordFields) return null;
+    if (!DelegateData.isSubscription || !showPasswordFields) return null;
 
     if (currentPasswordController.text.trim().isEmpty &&
         newPasswordController.text.trim().isEmpty) {
@@ -86,9 +87,9 @@ class PersonInformationViewModel extends ChangeNotifier {
 
   Future<void> startFun(BuildContext context) async {
 
-    bool changePassword =
-        currentPasswordController.text.trim().isNotEmpty ||
-            newPasswordController.text.trim().isNotEmpty;
+    bool changePassword = DelegateData.isSubscription &&
+        (currentPasswordController.text.trim().isNotEmpty ||
+            newPasswordController.text.trim().isNotEmpty);
 
     if (nameController.text ==
         DelegateData.delegateData!.name &&

@@ -2,10 +2,12 @@
 import 'package:babco/Models/DelegateDataModel.dart';
 import 'package:babco/Views/Evaluation/ServiceEvaluationPage.dart';
 import 'package:babco/Views/Evaluation/StationEvaluationPage.dart';
-import 'package:babco/Views/LoginPages/otp_code_page.dart';
+import 'package:babco/Views/LoginPages/login_otp_page.dart';
+import 'package:babco/Views/LoginPages/registration_email_verification_page.dart';
 import 'package:babco/Views/LoginPages/register_page.dart';
 import 'package:flutter/material.dart';
 import '../Views/fuel_card_page.dart';
+import '../Views/access_restricted_page.dart';
 import 'package:babco/Models/DataModel.dart';
 import 'package:babco/Models/MainModel.dart';
 import 'package:babco/Models/RequestsModel.dart';
@@ -41,10 +43,28 @@ import '../Views/services_selected_page.dart';
 import 'route_constants.dart';
 class CustomRouter {
   static Route<dynamic> generatedRoute(RouteSettings settings) {
+    if (DelegateData.isSubscription && const {
+      ClientServicePageRoute,
+      StationMaintenancePageRoute,
+      StationTransportationRoute,
+      StationEvaluationRoute,
+      ServiceEvaluationRoute,
+      StationReviewsRoute,
+      ServicesReviewsRoute,
+      RatePageRoute,
+    }.contains(settings.name)) {
+      return MaterialPageRoute(builder: (_) => AccessRestrictedPage(serviceRoute: settings.name!));
+    }
     switch (settings.name) {
       case fuelCardRoute:
+        if (!DelegateData.isSubscription) {
+          return MaterialPageRoute(builder: (_) => const HomePage());
+        }
         return MaterialPageRoute(builder: (_) => const FuelCardPage());
       case fuelHistoryRoute:
+        if (!DelegateData.isSubscription) {
+          return MaterialPageRoute(builder: (_) => const HomePage());
+        }
         return MaterialPageRoute(builder: (_) => const FuelHistoryPage());
       case startRoute:
         try {
@@ -64,6 +84,9 @@ class CustomRouter {
       case homeRoute:
         return MaterialPageRoute(builder: (_) => HomePage());
       case deleteAccountRoute:
+        if (DelegateData.isSubscription) {
+          return MaterialPageRoute(builder: (_) => const HomePage(initialIndex: 4));
+        }
         return MaterialPageRoute(builder: (_) => deleteAccountPage());
       case splashRoute:
         return MaterialPageRoute(builder: (_) => SplashPage());
@@ -169,10 +192,15 @@ class CustomRouter {
           final args= settings.arguments as OffersAndDiscounts;
           return MaterialPageRoute(builder: (_) => NewOfferPage(data: args,));
         }
+      case registrationEmailVerificationRoute:
+        {
+          final args = settings.arguments as DelegateDataModel;
+          return MaterialPageRoute(builder: (_) => RegistrationEmailVerificationPage(data: args));
+        }
       case verifyCodeRoute:
         {
           final args= settings.arguments as DelegateDataModel;
-          return MaterialPageRoute(builder: (_) => OtpPage(data: args,));
+          return MaterialPageRoute(builder: (_) => LoginOtpPage(data: args,));
         }
       default:
         return MaterialPageRoute(builder: (_) => NotFoundPage());

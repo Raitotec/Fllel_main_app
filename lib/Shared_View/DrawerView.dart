@@ -41,10 +41,14 @@ class _FalDrawer extends StatelessWidget {
           _row(context, Icons.home_outlined, falText('الرئيسية', 'Home'), () => _home(context, 0)),
           _row(context, Icons.location_on_outlined, falText('المحطات', 'Stations'), () => _home(context, 1)),
           _row(context, Icons.grid_view_outlined, falText('استعرض الخدمات', 'Browse services'), () => _home(context, 2)),
-          _row(context, Icons.card_giftcard_outlined, falText('المكافآت', 'Rewards'), () => _home(context, 3)),
+          if (!DelegateData.isSubscription)
+            _row(context, Icons.card_giftcard_outlined, falText('المكافآت', 'Rewards'), () => _home(context, 3)),
           _section(falText('طلب الخدمات', 'Service requests')),
-          _row(context, Icons.qr_code_2, falText('تعبئة الوقود', 'Fuel card'), () => _open(context, fuelCardRoute)),
-          _row(context, Icons.history, falText('حركات الوقود', 'Fuel history'), () => _open(context, fuelHistoryRoute)),
+          if (DelegateData.isSubscription) ...[
+            _row(context, Icons.qr_code_2, falText('تعبئة الوقود', 'Fuel card'), () => _open(context, fuelCardRoute)),
+            _row(context, Icons.history, falText('حركات الوقود', 'Fuel history'), () => _open(context, fuelHistoryRoute)),
+          ],
+          if (!DelegateData.isSubscription) ...[
           _row(context, Icons.add_shopping_cart, falText('طلب خدمة', 'Request a service'), () => _open(context, ClientServicePageRoute)),
           _row(context, Icons.handyman_outlined, falText('صيانة المحطة', 'Station maintenance'), () => _open(context, StationMaintenancePageRoute)),
           _row(context, Icons.local_shipping_outlined, falText('نقل الوقود', 'Fuel transport'), () => _open(context, StationTransportationRoute)),
@@ -52,9 +56,12 @@ class _FalDrawer extends StatelessWidget {
           _row(context, Icons.star_outline, falText('تقييم المحطات', 'Rate stations'), () => _open(context, StationEvaluationRoute)),
           _row(context, Icons.rate_review_outlined, falText('تقييم الخدمات', 'Rate services'), () => _open(context, ServiceEvaluationRoute)),
           _row(context, Icons.qr_code_scanner, falText('مسح QR', 'Scan QR'), () => _open(context, ServicesReviewsRoute)),
+          ],
           _section(falText('حسابك', 'Your account')),
-          _row(context, Icons.account_balance_wallet_outlined, falText('المحفظة', 'Wallet'), () => _open(context, BalanceRoute)),
-          _row(context, Icons.receipt_long_outlined, falText('طلباتي', 'My orders'), () => _open(context, RequestsRoute)),
+          if (!DelegateData.isSubscription) ...[
+            _row(context, Icons.account_balance_wallet_outlined, falText('المحفظة', 'Wallet'), () => _open(context, BalanceRoute)),
+            _row(context, Icons.receipt_long_outlined, falText('طلباتي', 'My orders'), () => _open(context, RequestsRoute)),
+          ],
           _row(context, Icons.settings_outlined, falText('الحساب والإعدادات', 'Account and settings'), () => _home(context, 4)),
           _section(falText('الدعم', 'Help')),
           _row(context, Icons.chat_bubble_outline, falText('تواصل معنا', 'Contact us'), () => _open(context, Connect_usRoute)),

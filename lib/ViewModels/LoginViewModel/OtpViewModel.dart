@@ -13,9 +13,11 @@ class OtpViewModel extends ChangeNotifier {
   @override
   void notifyListeners() { if (!_disposed) super.notifyListeners(); }
   final DelegateDataModel data;
+  final bool isRegistration;
 
   OtpViewModel({
     required this.data,
+    required this.isRegistration,
   });
 
   final formKey = GlobalKey<FormState>();
@@ -67,9 +69,10 @@ class OtpViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-     var res= await Verifycode(context, data.verificationLogin ?? data.mobile ?? "", otpController.text.trim(), isRegistration: data.isRegistrationVerification);
+     var res= await Verifycode(context, data.verificationLogin ?? data.mobile ?? "", otpController.text.trim(), isRegistration: isRegistration);
         if (!context.mounted || _disposed) return;
         if (res != null) {
+          res.type = data.type;
           await saveDelegateData(res);
           if (!context.mounted || _disposed) return;
           notifyListeners();
@@ -90,7 +93,7 @@ class OtpViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      var res = await VerifyResendCode(context, data.isRegistrationVerification ? (data.verificationLogin ?? "") : (data.verificationLogin ?? data.mobile ?? ""), isRegistration: data.isRegistrationVerification);
+      var res = await VerifyResendCode(context, isRegistration ? (data.verificationLogin ?? "") : (data.verificationLogin ?? data.mobile ?? ""), isRegistration: isRegistration);
       if (!context.mounted || _disposed) return;
       if (res != null) {
         startTimer();

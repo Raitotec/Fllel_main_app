@@ -38,7 +38,7 @@ class _RewardsState extends State<LoyaltySystemPage> with WidgetsBindingObserver
     if (state == AppLifecycleState.resumed && signedIn) { _tick(); _refresh(); }
   }
   Future<void> _refresh() async {
-    if (!signedIn || _loading) return;
+    if (DelegateData.isSubscription || !signedIn || _loading) return;
     setState(() { _loading = true; _failed = false; });
     try {
       final data = await AppMainPageFun(context);
@@ -56,6 +56,7 @@ class _RewardsState extends State<LoyaltySystemPage> with WidgetsBindingObserver
     if (mounted) { setState(() {}); if (signedIn) _refresh(); }
   }
   void _generate() {
+    if (DelegateData.isSubscription) return;
     if (!signedIn) { _signIn(); return; }
     final user = DelegateData.delegateData!;
     final points = BalancePointData.Point;
@@ -81,8 +82,42 @@ class _RewardsState extends State<LoyaltySystemPage> with WidgetsBindingObserver
       _refresh();
     } else if (_seconds != seconds) { setState(() => _seconds = seconds); }
   }
+  Widget _restrictedRewards() => Scaffold(
+    backgroundColor: Colors.white,
+    appBar: widget.embedded ? null : AppBar(
+      backgroundColor: Colors.white, surfaceTintColor: Colors.white,
+      foregroundColor: _ink, centerTitle: true,
+      title: Text(t('المكافآت', 'Rewards'), style: text(21, weight: FontWeight.w800))),
+    body: SafeArea(top: !widget.embedded, child: Center(child: SingleChildScrollView(
+      padding: const EdgeInsets.all(28), child: Column(mainAxisSize: MainAxisSize.min, children: [
+        SizedBox(width: 210, height: 200, child: Stack(alignment: Alignment.center, children: [
+          Container(width: 180, height: 180, decoration: const BoxDecoration(
+            color: Color(0xFFEEF6FD), shape: BoxShape.circle)),
+          Transform.rotate(angle: -.12, child: const Icon(Icons.card_giftcard_rounded, size: 112, color: _blue)),
+          const Positioned(top: 12, right: 20, child: Icon(Icons.auto_awesome, color: Color(0xFFFFCB22), size: 30)),
+          Positioned(bottom: 12, right: 20, child: Container(padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: const Color(0xFFFFF5CE), shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 5)),
+            child: const Icon(Icons.lock_rounded, color: _ink, size: 32))),
+        ])),
+        const SizedBox(height: 24),
+        Text(t('المكافآت غير متاحة لحسابك', 'Rewards are unavailable for your account'),
+          textAlign: TextAlign.center, style: text(22, weight: FontWeight.w800)),
+        const SizedBox(height: 12),
+        Text(t('ليس لديك صلاحية الوصول إلى المكافآت باستخدام حساب الاشتراكات.',
+          'Your subscription account does not have permission to access rewards.'),
+          textAlign: TextAlign.center, style: text(14, color: const Color(0xFF64748B), weight: FontWeight.w400)),
+        const SizedBox(height: 24),
+        FilledButton.icon(onPressed: () => Navigator.pushNamed(context, Connect_usRoute),
+          style: FilledButton.styleFrom(backgroundColor: _blue, foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
+          icon: const Icon(Icons.support_agent), label: Text(t('تواصل معنا', 'Contact us'),
+            style: text(14, color: Colors.white))),
+      ])))),
+  );
   @override
   Widget build(BuildContext context) {
+    if (DelegateData.isSubscription) return _restrictedRewards();
     final points = BalancePointData.Point;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(statusBarColor: Colors.white, statusBarIconBrightness: Brightness.dark),

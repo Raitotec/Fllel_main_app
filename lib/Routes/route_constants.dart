@@ -33,3 +33,5 @@ const String deleteAccountRoute = "deleteAccountRoute";
 const String verifyCodeRoute = "verifyCodeRoute";
 const String StationEvaluationRoute = "StationEvaluationRoute";
 const String ServiceEvaluationRoute = "ServiceEvaluationRoute";
+
+const String registrationEmailVerificationRoute = 'registrationEmailVerificationRoute';

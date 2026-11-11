@@ -24,8 +24,8 @@ Future<DelegateDataModel?> EditCustomer(BuildContext context,String mobile ,
           "name":first_name,
           "email":email,
           "lang": lang,
-          "currentPassword":currentPassword,
-          "newPassword":newPassword
+          if (DelegateData.isSubscription) "currentPassword":currentPassword,
+          if (DelegateData.isSubscription) "newPassword":newPassword
         });
         final response = await Post_Data(editcustomer+"/"+DelegateData.delegateData!.id!.toString(), data);
         print(response.body);
@@ -35,14 +35,28 @@ Future<DelegateDataModel?> EditCustomer(BuildContext context,String mobile ,
           print( " fn_Registration200 ::: ${valueMap['message']} ${valueMap['data']}");
           await AlertView(
               context, "success", Translations.of(context)!.Ok,Translations.of(context)!.success_msg);
-          DelegateDataModel x= DelegateDataModel(id: valueMap['data']['id'],name: valueMap['data']['name'],
-              mobile:   valueMap['data']['phone'],email: valueMap['data']['email']);
-          saveDelegateData(x);
+          final previous = DelegateData.delegateData!;
+          final x = DelegateDataModel.fromJson({
+            ...previous.toJson(),
+            'id': valueMap['data']['id'],
+            'name': valueMap['data']['name'],
+            'mobile': valueMap['data']['phone'],
+            'email': valueMap['data']['email'],
+          });
           return x;
         }
         else {
+          final message = valueMap['message']?.toString().trim() ?? '';
+          final error = valueMap['error']?.toString().trim() ?? '';
+          final errorMessage = message.isNotEmpty
+              ? message
+              : error.isNotEmpty
+                  ? error
+                  : (LanguageData.languageData == 'ar'
+                      ? 'حدث خطأ ما'
+                      : 'Something went wrong');
           await AlertView(
-              context, "error", Translations.of(context)!.ErrorTitle,valueMap['message'].toString());
+              context, "error", Translations.of(context)!.ErrorTitle, errorMessage);
           print( "fn_Registration400 ::: ${valueMap['message']} ${valueMap['data']}");
           return null;
         }

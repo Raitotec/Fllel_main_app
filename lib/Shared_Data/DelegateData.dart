@@ -6,6 +6,7 @@ import '../Models/DelegateDataModel.dart';
 
 class DelegateData {
   static DelegateDataModel? delegateData= null;
+  static bool get isSubscription => delegateData?.type == 'subscription';
 }
 
 saveDelegateData(DelegateDataModel obj)async

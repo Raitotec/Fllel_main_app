@@ -3,6 +3,7 @@ import '../Api/DataApi.dart';
 import '../Models/MainModel.dart';
 import '../Routes/route_constants.dart';
 import '../Shared_Data/BalancePointData.dart';
+import '../Shared_Data/DelegateData.dart';
 import '../Shared_Data/LanguageData.dart';
 import '../Shared_Data/ServicesData.dart';
 import '../Shared_View/DrawerView.dart';
@@ -75,7 +76,10 @@ class _MainScreenState extends State<MainScreen> with RouteAware {
         Text(t('أهلاً بك', 'Welcome'), style: _text(26, weight: FontWeight.w800)),
         Text(t('كل خدمات محطتك في مكان واحد', 'Your station services, all in one place'),
           style: _text(14, color: const Color(0xFF64748B), weight: FontWeight.w400)),
-        const SizedBox(height: 16), _balances(),
+        if (!DelegateData.isSubscription) ...[
+          const SizedBox(height: 16),
+          _balances(),
+        ],
         if (_loading) const Padding(padding: EdgeInsets.only(top: 8),
           child: LinearProgressIndicator(minHeight: 2, color: _yellow, backgroundColor: Color(0xFFE4EFF9))),
         if (_failed) Padding(padding: const EdgeInsets.only(top: 8), child: Row(children: [
@@ -87,12 +91,15 @@ class _MainScreenState extends State<MainScreen> with RouteAware {
         const SizedBox(height: 12),
         Row(children: [
           _quick(Icons.local_gas_station_outlined, t('الخدمات', 'Services'),
-            widget.onServices ?? () => _route(ClientServicePageRoute)),
-          const SizedBox(width: 10),
-          _quick(Icons.star_outline_rounded, t('تقييم زيارة', 'Rate a visit'), () => _route(StationEvaluationRoute)),
-          const SizedBox(width: 10),
-          _quick(Icons.card_giftcard, t('المكافآت', 'Rewards'), () => _route(LoyaltySystemRoute)),
+            DelegateData.isSubscription
+                ? () => _route(ClientServicePageRoute)
+                : widget.onServices ?? () => _route(ClientServicePageRoute)),
+            const SizedBox(width: 10),
+            _quick(Icons.star_outline_rounded, t('تقييم زيارة', 'Rate a visit'), () => _route(StationEvaluationRoute)),
+            const SizedBox(width: 10),
+            _quick(Icons.card_giftcard, t('المكافآت', 'Rewards'), () => _route(LoyaltySystemRoute)),
         ]),
+        if (DelegateData.isSubscription) ...[
         const SizedBox(height: 16),
         InkWell(onTap: () => _route(fuelCardRoute), borderRadius: BorderRadius.circular(18),
           child: Container(padding: const EdgeInsets.all(18), decoration: _card(color: const Color(0xFFECF5FC)),
@@ -101,6 +108,7 @@ class _MainScreenState extends State<MainScreen> with RouteAware {
                 Text(t('تعبئة الوقود', 'Fuel card'), style: _text(18, weight: FontWeight.w800)),
                 Text(t('بطاقتك وكود التعريف وحركات الوقود', 'Your card, identification code and refill history'), style: _text(12)),
               ])), const Icon(Icons.arrow_forward, color: _blue)]))),
+        ],
         const SizedBox(height: 16), _heading(t('عروض تهمك', 'Offers for you')),
         const SizedBox(height: 12),
         if (_offers.isEmpty) Container(padding: const EdgeInsets.all(20), decoration: _card(),

@@ -43,11 +43,19 @@ class LoginViewModel extends ChangeNotifier {
 
       if (!context.mounted || _disposed) return;
       if (res != null) {
+        res.type = isSubscription ? 'subscription' : 'default';
         if (!isSubscription) {
-          res.verificationLogin = identifierController.text.trim();
+          final needsEmailVerification = res.emailVerificationCode == false;
+          final email = res.email?.trim() ?? '';
+          res.verificationLogin = needsEmailVerification && email.isNotEmpty
+              ? email
+              : identifierController.text.trim();
+          res.isRegistrationVerification = needsEmailVerification;
           Navigator.pushNamed(
             context,
-            verifyCodeRoute,
+            needsEmailVerification
+                ? registrationEmailVerificationRoute
+                : verifyCodeRoute,
             arguments: res,
           );
         } else {
@@ -80,6 +88,7 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   Future<void> deleteAccount(BuildContext context) async {
+    if (DelegateData.isSubscription) return;
     if (isLoading || _disposed) return;
     try {
       isLoading = true;
